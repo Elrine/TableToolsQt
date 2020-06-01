@@ -26,7 +26,7 @@ public:
     void save() const;
     void saveAs(QUrl const& newPath, QString const& newName = "");
     bool load();
-    void createNote(QString const& name, Note* parent = nullptr, QString const& content = "");
+    Note* createNote(QString const& name, Note* parent = nullptr, QString const& content = "");
     void deleteNote(Note* note);
     std::list<Note*> const& getNotes() const;
     QString const& getName() const;

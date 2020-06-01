@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "campagndata.h"
+#include "campagndialog.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,5 +17,6 @@ public slots:
     bool createCampagn(QUrl filepath);
 private:
     CampagnData *campagn;
+    CampagnDialog *dialog;
 };
 #endif // MAINWINDOW_H

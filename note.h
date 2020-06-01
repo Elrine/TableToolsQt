@@ -19,7 +19,7 @@ public:
     Note(Note const& src);
     ~Note();
     Note& operator=(Note const& src);
-    QDomElement *toXML() const;
+    QDomDocument *toXML() const;
     void loadXML(QDomElement const& xmlElement);
     void setName(QString const& name);
     void setContent(QString const& content);

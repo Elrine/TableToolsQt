@@ -9,6 +9,8 @@ Note::Note(QString const& name, Note* parent, QString const& content) {
     this->name = name;
     this->content = content;
     this->parent = parent;
+    if (parent != nullptr)
+        parent->childs.push_front(this);
 }
 
 Note::Note(Note const& src) {
@@ -44,40 +46,41 @@ Note& Note::operator=(const Note &src) {
     return *this;
 }
 
-QDomElement* Note::toXML() const {
-    QDomElement *el = new QDomElement();
+QDomDocument* Note::toXML() const {
+    QDomDocument *dom = new QDomDocument();
+    QDomElement el = dom->createElement("Note");
 
-    el->setAttribute("Name", this->name);
-    el->setTagName("Note");
+    el.setAttribute("Name", this->name);
+    dom->appendChild(el);
     if (this->content != "") {
         QDomElement content;
-        content.setTagName("Content");
-        content.setNodeValue(this->content);
-        el->appendChild(content);
+        content = dom->createElement("Content");
+        content.appendChild(dom->createTextNode(this->content));
+        el.appendChild(content);
     }
     if (this->tags.size() > 0) {
         QDomElement tags;
-        tags.setTagName("Tags");
+        tags = dom->createElement("Tags");
         for (std::list<QString>::const_iterator tag = this->tags.begin(); tag != this->tags.end(); ++tag) {
             QDomElement el_tag;
             el_tag.setTagName("Tag");
             el_tag.setNodeValue(*tag);
             tags.appendChild(el_tag);
         }
-        el->appendChild(tags);
+        el.appendChild(tags);
     }
     if (this->childs.size() > 0) {
         QDomElement childs;
-        childs.setTagName("Childs");
-        QDomElement *el_note;
+        childs = dom->createElement("Childs");
+        QDomDocument *el_note;
         for (std::list<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
             el_note = (*child)->toXML();
-            childs.appendChild(*el_note);
+            childs.appendChild(el_note->firstChild());
             delete el_note;
         }
-        el->appendChild(childs);
+        el.appendChild(childs);
     }
-    return el;
+    return dom;
 }
 
 void Note::loadXML(const QDomElement &xmlElement) {

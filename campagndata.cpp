@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QSaveFile>
+#include <QDate>
 
 CampagnData::CampagnData(QUrl const& path, QString const& name) {
     this->path = path;
@@ -57,51 +58,58 @@ CampagnData* CampagnData::initCampagn(QUrl const& path, bool loadCampagn) {
 }
 
 void CampagnData::generate() const {
-    QDir dir(this->path.toString());
+    QDir dir(this->path.toLocalFile());
     dir.mkdir(this->name);
     dir.cd(this->name);
-    dir.mkdir("Ressource");
-    dir.mkdir("Maps");
-    dir.mkdir("Character");
-    dir.mkdir("Track");
-    dir.cd("Ressource");
-    dir.mkdir("Music");
-    dir.mkdir("Image");
-    dir.cd("../Character");
-    dir.mkdir("Template");
-    dir.mkdir("Sheet");
-    this->generateNotes();
+    if (this->generateNotes()) {
+        dir.mkdir("Ressource");
+        dir.mkdir("Maps");
+        dir.mkdir("Character");
+        dir.mkdir("Track");
+        dir.cd("Ressource");
+        dir.mkdir("Music");
+        dir.mkdir("Image");
+        dir.cd("../Character");
+        dir.mkdir("Template");
+        dir.mkdir("Sheet");
+    }
+    else {
+        dir.cdUp();
+        dir.remove(this->name);
+    }
 }
 
 bool CampagnData::generateNotes() const {
-    QFile file(this->path.resolved(QUrl("./Notes.xml")).toString());
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::NewOnly)) {
+    QFile file(this->path.toLocalFile() + "/" + this->name + "/Notes.xml");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::NewOnly)) {
         qDebug() << "Can't generate the Notes.xml file";
         return false;
     }
     QTextStream stream(&file);
-    QDomElement xmlDoc;
-    xmlDoc.setTagName("Notes");
-    xmlDoc.save(stream, 0);
+    QDomDocument dom;
+    QDomElement xmlDoc = dom.createElement("Notes");
+    dom.appendChild(xmlDoc);
+    xmlDoc.save(stream, 4, QDomDocument::EncodingFromDocument);
     file.close();
     return true;
 }
 
 void CampagnData::saveNotes() const{
-        QUrl path = this->path.resolved(QUrl("./Notes.xml"));
-        QSaveFile file(path.toString());
+        QString path = this->path.toLocalFile() + "/" + this->name + "/Notes.xml";
+        QSaveFile file(path);
         if(!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
             return;
         QTextStream stream(&file);
+        QDomDocument dom;
         QDomElement xmlDoc;
-        xmlDoc.setTagName("Notes");
-        QDomElement *noteXml;
+        xmlDoc = dom.createElement("Notes");
+        QDomDocument *noteXml;
         foreach (Note* note, this->listNote) {
             noteXml = note->toXML();
-            xmlDoc.appendChild(*noteXml);
+            xmlDoc.appendChild(noteXml->firstChild());
             delete noteXml;
         }
-        xmlDoc.save(stream, 0);
+        xmlDoc.save(stream, 4);
         file.commit();
 }
 
@@ -119,9 +127,9 @@ void CampagnData::saveAs(const QUrl &newPath, const QString &newName) {
 
 bool CampagnData::loadNotes() {
     QDomDocument noteXml;
-    QFile file(this->path.resolved(QUrl("./Notes.xml")).toString());
+    QFile file(this->path.toLocalFile() + "/" + this->name + "/Notes.xml");
     if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "file \"Notes.xml\" in \""<< this->path <<"\" can't be loaded";
+        qDebug() << "file \"Notes.xml\" in \""<< this->path.toLocalFile() + "/" + this->name  <<"\" can't be loaded";
         return false;
     }
     QDomDocument xml;
@@ -147,10 +155,11 @@ bool CampagnData::load() {
     return returnValue;
 }
 
-void CampagnData::createNote(const QString &name, Note *parent, const QString &content) {
+Note* CampagnData::createNote(const QString &name, Note *parent, const QString &content) {
     Note *note = new Note(name, parent, content);
     if (parent == nullptr)
         this->listNote.push_front(note);
+    return note;
 }
 
 void CampagnData::deleteNote(Note *note) {
