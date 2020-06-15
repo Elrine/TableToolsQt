@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <list>
 #include "fmod.hpp"
+#include "tagbledata.h"
 #include <QDomElement>
 
 class AudioManager {
@@ -17,12 +18,11 @@ public:
     static AudioManager &getAudioManager();
 };
 
-class Track
+class Track : public TagbleData
 {
 private:
     QString name;
-    std::list<QString> tags;
-    QUrl filepath;
+    QString filepath;
     bool looping;
     float vol;
     FMOD::Sound *sound;
@@ -30,29 +30,28 @@ private:
     static FMOD::System *system;
 public:
     Track();
-    Track(QString const& name, QUrl const& filepath = QUrl(""), bool looping = false);
+    Track(QString const& name, QString const& filepath = "", bool looping = false);
     Track(Track const& src);
     ~Track();
     Track& operator=(Track const& src);
     QDomDocument *toXML() const;
     void loadXML(QDomElement const& xmlElement);
     void setName(QString const& name);
-    void addTag(QString const& tag);
-    void removeTag(QString const& tag);
-    void setFilepath(QUrl const& filepath);
+    void setFilepath(QString const& filepath);
     void setLoop(bool loop);
     void setSoundPos(unsigned int pos);
     void setVolume(float vol);
     QString const& getName() const;
-    std::list<QString> const& getTags() const;
-    QUrl const& getFilepath() const;
+    QString const& getFilepath() const;
     bool getLoop() const;
+    bool isPlaying() const;
     unsigned int getSoundLength() const;
     unsigned int getPos() const;
     float getVol() const;
     void loadSound(QUrl const& projectPath);
     void play();
     void pause();
+    void stop();
 };
 
 #endif // TRACK_H

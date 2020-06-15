@@ -3,20 +3,23 @@
 
 #include <QMainWindow>
 #include "campagndata.h"
-#include "campagndialog.h"
+#include "ui_mainwindow.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(CampagnData *campagn = nullptr, QWidget *parent = nullptr);
     ~MainWindow();
 public slots:
-    bool openCampagn(QUrl filepath);
-    bool createCampagn(QUrl filepath);
+    void openCampagn();
+    void createCampagn();
+    void save();
 private:
+    void initTab();
+    QTabWidget *tabWidget;
     CampagnData *campagn;
-    CampagnDialog *dialog;
+    Ui::MainWindow ui;
 };
 #endif // MAINWINDOW_H

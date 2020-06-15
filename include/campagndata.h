@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <QFileInfo>
 #include "note.h"
+#include "audio.h"
 
 class CampagnData
 {
@@ -11,10 +12,15 @@ private:
     QUrl path;
     QString name;
     std::list<Note*> listNote;
+    std::list<Track*> listTrack;
 
     void saveNotes() const;
     bool loadNotes();
     bool generateNotes() const;
+
+    void saveTracks() const;
+    bool loadTracks();
+    bool generateTracks() const;
 public:
     CampagnData() = delete;
     explicit CampagnData(QUrl const& path, QString const& name);
@@ -28,7 +34,11 @@ public:
     bool load();
     Note* createNote(QString const& name, Note* parent = nullptr, QString const& content = "");
     void deleteNote(Note* note);
+    Track* importSound(QUrl const& filename);
+    Track* createTrack(QString const& name, QString const& filename);
+    void deleteTrack(Track* note);
     std::list<Note*> const& getNotes() const;
+    std::list<Track*> const& getTracks() const;
     QString const& getName() const;
 };
 

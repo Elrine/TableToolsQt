@@ -22,11 +22,13 @@ FMOD::System *AudioManager::getSystem() {
 
 Track::Track()
 {
+    this->sound = nullptr;
+    this->channel = nullptr;
     this->looping = false;
     this->vol = 1;
 }
 
-Track::Track(QString const& name, QUrl const& filepath, bool looping) {
+Track::Track(QString const& name, QString const& filepath, bool looping) {
     this->name = name;
     this->looping = looping;
     this->vol = 1;
@@ -47,11 +49,9 @@ Track::Track(Track const& src) {
 Track::~Track() {
     if (this->sound != nullptr) {
         this->sound->release();
-        delete this->sound;
     }
     if (this->channel != nullptr) {
         this->channel->stop();
-        delete this->channel;
     }
 }
 
@@ -75,15 +75,15 @@ QDomDocument *Track::toXML() const {
     dom->appendChild(el);
     QDomElement filepath;
     filepath = dom->createElement("Path");
-    filepath.appendChild(dom->createTextNode(this->filepath.toLocalFile()));
+    filepath.appendChild(dom->createTextNode(this->filepath));
     el.appendChild(filepath);
     if (this->tags.size() > 0) {
         QDomElement tags;
         tags = dom->createElement("Tags");
         for (std::list<QString>::const_iterator tag = this->tags.begin(); tag != this->tags.end(); ++tag) {
             QDomElement el_tag;
-            el_tag.setTagName("Tag");
-            el_tag.setNodeValue(*tag);
+            el_tag = dom->createElement("Tag");
+            el_tag.appendChild(dom->createTextNode(*tag));
             tags.appendChild(el_tag);
         }
         el.appendChild(tags);
@@ -117,16 +117,7 @@ void Track::setName(const QString &name) {
     this->name = name;
 }
 
-void Track::addTag(const QString &tag) {
-    if (std::count(this->tags.begin(), this->tags.end(), tag) == 0)
-        this->tags.push_front(tag);
-}
-
-void Track::removeTag(const QString &tag) {
-    this->tags.remove(tag);
-}
-
-void Track::setFilepath(const QUrl &filepath) {
+void Track::setFilepath(const QString &filepath) {
     this->filepath = filepath;
 }
 
@@ -159,16 +150,22 @@ QString const& Track::getName() const {
     return this->name;
 }
 
-std::list<QString> const& Track::getTags() const {
-    return this->tags;
-}
-
-QUrl const& Track::getFilepath() const {
+QString const& Track::getFilepath() const {
     return this->filepath;
 }
 
 bool Track::getLoop() const {
     return this->looping;
+}
+
+bool Track::isPlaying() const {
+    bool isPlaying = false;
+    bool isPaused = false;
+    if (this->channel != nullptr) {
+        this->channel->isPlaying(&isPlaying);
+        this->channel->getPaused(&isPaused);
+    }
+    return isPlaying && !isPaused;
 }
 
 unsigned int Track::getSoundLength() const {
@@ -222,4 +219,13 @@ void Track::pause() {
         return;
     }
     this->channel->setPaused(true);
+}
+
+void Track::stop() {
+
+    if (this->channel == nullptr) {
+        return;
+    }
+    this->channel->stop();
+    this->channel = nullptr;
 }

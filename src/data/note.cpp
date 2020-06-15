@@ -124,14 +124,6 @@ void Note::setContent(const QString &content) {
     this->content = content;
 }
 
-void Note::addTag(const QString &tag) {
-    if (std::count(this->tags.begin(), this->tags.end(), tag) == 0)
-        this->tags.push_front(tag);
-}
-
-void Note::removeTag(const QString &tag) {
-    this->tags.remove(tag);
-}
 
 bool Note::addChild(Note* newChild) {
     for (std::list<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
@@ -159,10 +151,6 @@ QString const& Note::getName() const {
 
 QString const& Note::getContent() const {
     return this->content;
-}
-
-std::list<QString> const& Note::getTags() const {
-    return this->tags;
 }
 
 std::list<Note*> const& Note::getChilds() const {

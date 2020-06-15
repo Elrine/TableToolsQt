@@ -15,18 +15,33 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+
+INCLUDEPATH += $$PWD/include
+DEPENDPATH += $$PWD/include
+
 SOURCES += \
-    campagndata.cpp \
-    campagndialog.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    note.cpp
+    src/ambiance/trackwidget.cpp \
+    src/ambiance/ambiancetab.cpp \
+    src/data/audio.cpp \
+    src/data/campagndata.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/data/note.cpp \
+    src/note/notetab.cpp \
+    src/utility/tagbledata.cpp \
+    src/utility/tagwidget.cpp
+
 
 HEADERS += \
-    campagndata.h \
-    campagndialog.h \
-    mainwindow.h \
-    note.h
+    include/notetab.h \
+    include/tagbledata.h \
+    include/ambiancetab.h \
+    include/audio.h \
+    include/campagndata.h \
+    include/mainwindow.h \
+    include/note.h \
+    include/tagwidget.h \
+    include/trackwidget.h
 
 TRANSLATIONS += \
     TableTools_fr_FR.ts
@@ -36,10 +51,16 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32: LIBS += -L$$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x64/' -lfmod_vc
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x64' -lfmod_vc
+win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x64' -lfmodL_vc
 
 INCLUDEPATH += $$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/inc'
 DEPENDPATH += $$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/inc'
 
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x64/fmod_vc.lib'
-else:win32-g++: PRE_TARGETDEPS += $$PWD/'../../../../Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api/core/lib/x64/libfmod_vc.a'
+FORMS += \
+    design/ambiancetab.ui \
+    design/mainwindow.ui \
+    design/notetab.ui \
+    design/tagwidget.ui \
+    design/trackwidget.ui
+
