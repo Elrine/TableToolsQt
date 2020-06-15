@@ -11,8 +11,8 @@ class CampagnData
 private:
     QUrl path;
     QString name;
-    std::list<Note*> listNote;
-    std::list<Track*> listTrack;
+    std::vector<Note*> listNote;
+    std::vector<Track*> listTrack;
 
     void saveNotes() const;
     bool loadNotes();
@@ -37,8 +37,8 @@ public:
     Track* importSound(QUrl const& filename);
     Track* createTrack(QString const& name, QString const& filename);
     void deleteTrack(Track* note);
-    std::list<Note*> const& getNotes() const;
-    std::list<Track*> const& getTracks() const;
+    std::vector<Note*> const& getNotes() const;
+    std::vector<Track*> const& getTracks() const;
     QString const& getName() const;
 };
 

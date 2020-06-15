@@ -13,10 +13,10 @@ CampagnData::CampagnData(QUrl const& path, QString const& name) {
 CampagnData::CampagnData(CampagnData const& src) {
     this->path = src.path;
     this->name = src.name;
-    for(std::list<Note*>::const_iterator note = src.listNote.begin(); note != src.listNote.end(); ++note) {
+    for(std::vector<Note*>::const_iterator note = src.listNote.begin(); note != src.listNote.end(); ++note) {
         this->listNote.push_back(new Note(*(*note)));
     }
-    for(std::list<Track*>::const_iterator track = src.listTrack.begin(); track != src.listTrack.end(); ++track) {
+    for(std::vector<Track*>::const_iterator track = src.listTrack.begin(); track != src.listTrack.end(); ++track) {
         this->listTrack.push_back(new Track(*(*track)));
     }
 }
@@ -31,10 +31,10 @@ CampagnData::~CampagnData() {
 CampagnData& CampagnData::operator=(CampagnData const& src) {
     this->path = src.path;
     this->name = src.name;
-    for(std::list<Note*>::const_iterator note = src.listNote.begin(); note != src.listNote.end(); ++note) {
+    for(std::vector<Note*>::const_iterator note = src.listNote.begin(); note != src.listNote.end(); ++note) {
         this->listNote.push_back(new Note(*(*note)));
     }
-    for(std::list<Track*>::const_iterator track = src.listTrack.begin(); track != src.listTrack.end(); ++track) {
+    for(std::vector<Track*>::const_iterator track = src.listTrack.begin(); track != src.listTrack.end(); ++track) {
         this->listTrack.push_back(new Track(*(*track)));
     }
     return *this;
@@ -225,14 +225,16 @@ bool CampagnData::load() {
 Note* CampagnData::createNote(const QString &name, Note *parent, const QString &content) {
     Note *note = new Note(name, parent, content);
     if (parent == nullptr)
-        this->listNote.push_front(note);
+        this->listNote.push_back(note);
     return note;
 }
 
 void CampagnData::deleteNote(Note *note) {
     Note* parentNote = note->getParent();
     if (parentNote == nullptr) {
-        this->listNote.remove(note);
+        std::vector<Note*>::const_iterator it = std::find(listNote.begin(), listNote.end(), note);
+        if (*it == note)
+            this->listNote.erase(it);
     }
     else {
         parentNote->removeChild(note);
@@ -256,21 +258,23 @@ Track* CampagnData::importSound(const QUrl &filename) {
 
 Track* CampagnData::createTrack(const QString &name, const QString &filename) {
     Track *track = new Track(name, filename);
-    this->listTrack.push_front(track);
+    this->listTrack.push_back(track);
     track->loadSound(this->path.resolved(this->name + "/"));
     return track;
 }
 
 void CampagnData::deleteTrack(Track *track) {
-    this->listTrack.remove(track);
+    std::vector<Track*>::const_iterator it = std::find(listTrack.begin(), listTrack.end(), track);
+    if (*it == track)
+        this->listTrack.erase(it);
     delete track;
 }
 
-std::list<Note*> const& CampagnData::getNotes() const {
+std::vector<Note*> const& CampagnData::getNotes() const {
     return this->listNote;
 }
 
-std::list<Track*> const& CampagnData::getTracks() const {
+std::vector<Track*> const& CampagnData::getTracks() const {
     return this->listTrack;
 }
 

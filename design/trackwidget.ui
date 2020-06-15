@@ -47,8 +47,8 @@ padding: 2px
      </property>
      <property name="maximumSize">
       <size>
-       <width>401</width>
-       <height>301</height>
+       <width>420</width>
+       <height>320</height>
       </size>
      </property>
      <property name="frameShape">

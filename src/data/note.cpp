@@ -10,7 +10,7 @@ Note::Note(QString const& name, Note* parent, QString const& content) {
     this->content = content;
     this->parent = parent;
     if (parent != nullptr)
-        parent->childs.push_front(this);
+        parent->addChild(this);
 }
 
 Note::Note(Note const& src) {
@@ -39,8 +39,8 @@ Note& Note::operator=(const Note &src) {
     for(std::list<QString>::const_iterator tag = srcTags.begin(); tag != srcTags.end(); ++tag) {
         this->tags.push_back(*tag);
     }
-    std::list<Note*> const srcChilds = src.getChilds();
-    for(std::list<Note*>::const_iterator child = srcChilds.begin(); child != srcChilds.end(); ++child) {
+    std::vector<Note*> const srcChilds = src.getChilds();
+    for(std::vector<Note*>::const_iterator child = srcChilds.begin(); child != srcChilds.end(); ++child) {
         this->childs.push_back(*child);
     }
     return *this;
@@ -73,7 +73,7 @@ QDomDocument* Note::toXML() const {
         QDomElement childs;
         childs = dom->createElement("Childs");
         QDomDocument *el_note;
-        for (std::list<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
+        for (std::vector<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
             el_note = (*child)->toXML();
             childs.appendChild(el_note->firstChild());
             delete el_note;
@@ -126,16 +126,22 @@ void Note::setContent(const QString &content) {
 
 
 bool Note::addChild(Note* newChild) {
-    for (std::list<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
+    return addChildAt(newChild, 0);
+}
+
+bool Note::addChildAt(Note *newChild, int row) {
+    for (std::vector<Note*>::const_iterator child = this->childs.begin(); child != this->childs.end(); ++child) {
         if ((*child)->name == newChild->name)
             return false;
     }
-    this->childs.push_front(newChild);
+    this->childs.insert(this->childs.begin() + row, newChild);
     return true;
 }
 
 void Note::removeChild(Note* const child) {
-    this->childs.remove(child);
+    std::vector<Note*>::const_iterator it = std::find(childs.begin(), childs.end(), child);
+    if (*it == child)
+        this->childs.erase(it);
 }
 
 void Note::setParent(Note *const parent) {
@@ -153,10 +159,16 @@ QString const& Note::getContent() const {
     return this->content;
 }
 
-std::list<Note*> const& Note::getChilds() const {
+std::vector<Note*> const& Note::getChilds() const {
     return this->childs;
 }
 
 Note* Note::getParent() const {
     return this->parent;
+}
+
+Note* Note::getChild(int row) const {
+    if (row < 0 || static_cast<unsigned int>(row) >= this->childs.size())
+        return nullptr;
+    return this->childs[row];
 }
